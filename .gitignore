@@ -47,3 +47,7 @@ package-lock.json
 yarn.lock
 
 .idea
+
+relay-*.json
+listener-*.json
+dialer-*.json
