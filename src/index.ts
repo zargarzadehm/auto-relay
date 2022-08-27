@@ -1,6 +1,6 @@
 import { startRelay } from "./relay.js";
-import { startListener } from "./listener"
-import { startDialer } from "./dialer"
+import { startListener } from "./listener.js"
+import { startDialer } from "./dialer.js"
 
 if (process.env.TYPE_P2P === "listener")
     startListener()
