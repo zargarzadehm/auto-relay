@@ -29,7 +29,7 @@ async function startDialer() {
     await node.start()
     _NODE = await node
     await savePeerIdIfNeed(peerId, 'dialer')
-    console.log(`Node started with id ${node.peerId.toString()}`)
+    console.log(`Dialer node started with id ${node.peerId.toString()}`)
 
     const conn = await node.dial(await new Multiaddr(autoRelayNodeAddr))
     console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`)

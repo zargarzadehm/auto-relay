@@ -3,6 +3,9 @@ import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
 import { getOrCreatePeerID, savePeerIdIfNeed } from "./utils.js";
+import { FloodSub } from "@libp2p/floodsub";
+import { Bootstrap } from "@libp2p/bootstrap";
+import { PubSubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
 
 let _NODE: Libp2p | undefined;
 
@@ -32,7 +35,13 @@ async function startRelay () {
             advertise: {
                 enabled: true,
             }
-        }
+        },
+        pubsub: new FloodSub(),
+        peerDiscovery: [
+            new PubSubPeerDiscovery({
+                interval: 1000
+            })
+        ]
     })
 
     // Listen for new peers
@@ -55,7 +64,7 @@ async function startRelay () {
 
     await savePeerIdIfNeed(peerId, 'relay')
 
-    console.log(`Node started with id ${node.peerId.toString()}`)
+    console.log(`Relay node started with id ${node.peerId.toString()}`)
     console.log('Listening on:')
     node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 }

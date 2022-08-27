@@ -6,6 +6,8 @@ import { Bootstrap } from '@libp2p/bootstrap'
 import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { FloodSub } from '@libp2p/floodsub'
 import { getOrCreatePeerID, savePeerIdIfNeed } from "./utils.js";
+import { createFromJSON } from "@libp2p/peer-id-factory";
+import { Multiaddr } from "@multiformats/multiaddr";
 
 let _NODE: Libp2p | undefined;
 
@@ -26,7 +28,7 @@ async function startListener() {
             enabled: true,
             autoRelay: {
                 enabled: true,
-                maxListeners: 2
+                maxListeners: 5
             }
         },
         pubsub: new FloodSub(),
@@ -47,6 +49,7 @@ async function startListener() {
     // Listen for new peers
     node.addEventListener('peer:discovery', (evt) => {
         console.log(`Found peer ${evt.detail.id.toString()}`)
+        console.log("peers", node.getPeers())
     })
 
     // Listen for new connections to peers
@@ -63,7 +66,7 @@ async function startListener() {
     _NODE = await node
     await savePeerIdIfNeed(peerId, 'listener')
 
-    console.log(`Node started with id ${node.peerId.toString()}`)
+    console.log(`Listener node started with id ${node.peerId.toString()}`)
 
     // Wait for connection and relay to be bind for the example purpose
     node.peerStore.addEventListener('change:multiaddrs', (evt) => {
@@ -74,6 +77,10 @@ async function startListener() {
             console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
         }
     })
+
+    // node.peerStore.addressBook.set(
+    //     await createFromJSON({id: "12D3KooWSYwG8nwQ2pn4f2Ykn5qxJ5sK99UoadiqfsK473omtjmx"}),
+    //     [await new Multiaddr("/ip4/10.10.9.6/tcp/45663/ws/p2p/12D3KooWKvWt1tPABCdfRK42Liio3ttNw22AuktJ1fH7NWyaioUg/p2p-circuit/p2p/12D3KooWSYwG8nwQ2pn4f2Ykn5qxJ5sK99UoadiqfsK473omtjmx")])
 }
 
 export { startListener }
