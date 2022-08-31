@@ -13,7 +13,7 @@ async function startRelay () {
     const node = await createLibp2p({
         peerId: peerId.peerId,
         addresses: {
-            listen: ['/ip4/0.0.0.0/tcp/0/ws']
+            listen: [`/ip4/0.0.0.0/tcp/808${process.env.PEER_PATH_NUMBER!}/ws`]
             // TODO check "What is next?" section
             // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
         },
