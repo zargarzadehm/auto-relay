@@ -36,8 +36,8 @@ async function startListener() {
             new Bootstrap({
                 interval: 10e3,
                 list: [
-                    '/ip4/10.10.9.6/tcp/33703/ws/p2p/12D3KooWHE8KRED4QroNj4UwPFfyHHysRjMRr3YE1HmFYKGfqo7x',
-                    '/ip4/10.10.9.6/tcp/35707/ws/p2p/12D3KooWS9qp4rjviahzmLiBZjHA5LfwqgucrSKPvECkY764yGnb'
+                    '/ip4/10.10.9.6/tcp/8080/ws/p2p/12D3KooWHE8KRED4QroNj4UwPFfyHHysRjMRr3YE1HmFYKGfqo7x',
+                    '/ip4/10.10.9.6/tcp/8081/ws/p2p/12D3KooWS9qp4rjviahzmLiBZjHA5LfwqgucrSKPvECkY764yGnb'
                 ]
             }),
             new PubSubPeerDiscovery({
