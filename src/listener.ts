@@ -36,8 +36,8 @@ async function startListener() {
             new Bootstrap({
                 interval: 10e3,
                 list: [
-                    '/ip4/10.10.9.6/tcp/45663/ws/p2p/12D3KooWKvWt1tPABCdfRK42Liio3ttNw22AuktJ1fH7NWyaioUg',
-                    '/ip4/10.10.9.6/tcp/44973/ws/p2p/12D3KooWMaVTPdTMXxt4T1yqXUM1KWvasAktWuG8rLMYxkdzYDc4'
+                    '/ip4/10.10.9.6/tcp/33703/ws/p2p/12D3KooWHE8KRED4QroNj4UwPFfyHHysRjMRr3YE1HmFYKGfqo7x',
+                    '/ip4/10.10.9.6/tcp/35707/ws/p2p/12D3KooWS9qp4rjviahzmLiBZjHA5LfwqgucrSKPvECkY764yGnb'
                 ]
             }),
             new PubSubPeerDiscovery({
@@ -49,7 +49,6 @@ async function startListener() {
     // Listen for new peers
     node.addEventListener('peer:discovery', (evt) => {
         console.log(`Found peer ${evt.detail.id.toString()}`)
-        console.log("peers", node.getPeers())
     })
 
     // Listen for new connections to peers
@@ -77,10 +76,22 @@ async function startListener() {
             console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
         }
     })
+    // addPeer().then(() => setTimeout(addPeer, 20 * 1000))
 
-    // node.peerStore.addressBook.set(
-    //     await createFromJSON({id: "12D3KooWSYwG8nwQ2pn4f2Ykn5qxJ5sK99UoadiqfsK473omtjmx"}),
-    //     [await new Multiaddr("/ip4/10.10.9.6/tcp/45663/ws/p2p/12D3KooWKvWt1tPABCdfRK42Liio3ttNw22AuktJ1fH7NWyaioUg/p2p-circuit/p2p/12D3KooWSYwG8nwQ2pn4f2Ykn5qxJ5sK99UoadiqfsK473omtjmx")])
 }
+
+// async function addPeer() {
+//     for (const peer of Array( "12D3KooWEthJsbikfajTQPercM1jwLcm1rSCrpGrhxrAF7CjbS1g", "12D3KooWChTtwD1yUXUEcLbE7ajYZLMcG4mgBTwBTFa9avbBxn2F", "12D3KooWLcw4KsdttzPmXiTiCxJVJ5KiTrZpXZeN8qBSVTLJ3g4s")) {
+//         const multi = await new Multiaddr(`/ip4/10.10.9.6/tcp/45663/ws/p2p/12D3KooWHE8KRED4QroNj4UwPFfyHHysRjMRr3YE1HmFYKGfqo7x/p2p-circuit/p2p/${peer}`)
+//         if(_NODE){
+//             await _NODE.peerStore.addressBook.set(
+//                 await createFromJSON({id: `${peer}`}),
+//                 [multi]
+//             )
+//             const conn = await _NODE.dial(multi)
+//             console.log(conn.remoteAddr.toString())
+//         }
+//     }
+// }
 
 export { startListener }
