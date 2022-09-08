@@ -2,7 +2,7 @@ import { createLibp2p, Libp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
-import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils";
+import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
 import { FloodSub } from "@libp2p/floodsub";
 import { PubSubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
 

@@ -5,7 +5,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import fs from "fs";
 import { Libp2p } from "libp2p";
 import { pipe } from "it-pipe";
-import { JsonBI } from "./NetworkModels";
+import { JsonBI } from "./NetworkModels.js";
 import { Connection, Stream } from "@libp2p/interface-connection";
 import map from "it-map";
 import * as lp from "it-length-prefixed";

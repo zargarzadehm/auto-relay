@@ -1,7 +1,7 @@
 import { startRelay } from "./relay.js";
 import { startListener } from "./listener.js"
 import { startDialer } from "./dialer.js"
-import { delay, getOpenStream, sendMessage } from "./utils";
+import { delay, getOpenStream, sendMessage } from "./utils.js";
 
 const main =  async () => {
     if (process.env.TYPE_P2P === "listener"){
