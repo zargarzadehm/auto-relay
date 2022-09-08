@@ -5,9 +5,8 @@ import { Mplex } from '@libp2p/mplex'
 import { Bootstrap } from '@libp2p/bootstrap'
 import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { FloodSub } from '@libp2p/floodsub'
-import { getOrCreatePeerID, savePeerIdIfNeed } from "./utils.js";
-import { createFromJSON } from "@libp2p/peer-id-factory";
-import { Multiaddr } from "@multiformats/multiaddr";
+import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
+
 
 let _NODE: Libp2p | undefined;
 
@@ -48,7 +47,7 @@ async function startListener() {
 
     // Listen for new peers
     node.addEventListener('peer:discovery', (evt) => {
-        console.log(`Found peer ${evt.detail.id.toString()}`)
+        console.log(`Peer ${node.peerId.toString()} discovered: ${evt.detail.id.toString()} with ${evt.detail.multiaddrs}`)
     })
 
     // Listen for new connections to peers
@@ -67,31 +66,25 @@ async function startListener() {
 
     console.log(`Listener node started with id ${node.peerId.toString()}`)
 
+    // Handle messages for the protocol
+    await node.handle(
+        '/broadcast',
+        async ({stream}) => {
+            // Read the stream and output to console
+            streamToConsole(stream)
+        }
+    )
+
     // Wait for connection and relay to be bind for the example purpose
     node.peerStore.addEventListener('change:multiaddrs', (evt) => {
-        const {peerId} = evt.detail
+        const { peerId } = evt.detail
 
         // Updated self multiaddrs?
         if (peerId.equals(node.peerId)) {
             console.log(`Advertising with a relay address of ${node.getMultiaddrs()[0].toString()}`)
         }
     })
-    // addPeer().then(() => setTimeout(addPeer, 20 * 1000))
-
+    return node
 }
-
-// async function addPeer() {
-//     for (const peer of Array( "12D3KooWEthJsbikfajTQPercM1jwLcm1rSCrpGrhxrAF7CjbS1g", "12D3KooWChTtwD1yUXUEcLbE7ajYZLMcG4mgBTwBTFa9avbBxn2F", "12D3KooWLcw4KsdttzPmXiTiCxJVJ5KiTrZpXZeN8qBSVTLJ3g4s")) {
-//         const multi = await new Multiaddr(`/ip4/10.10.9.6/tcp/45663/ws/p2p/12D3KooWHE8KRED4QroNj4UwPFfyHHysRjMRr3YE1HmFYKGfqo7x/p2p-circuit/p2p/${peer}`)
-//         if(_NODE){
-//             await _NODE.peerStore.addressBook.set(
-//                 await createFromJSON({id: `${peer}`}),
-//                 [multi]
-//             )
-//             const conn = await _NODE.dial(multi)
-//             console.log(conn.remoteAddr.toString())
-//         }
-//     }
-// }
 
 export { startListener }
