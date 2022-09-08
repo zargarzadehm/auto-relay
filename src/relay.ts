@@ -2,7 +2,7 @@ import { createLibp2p, Libp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
-import { getOrCreatePeerID, savePeerIdIfNeed } from "./utils.js";
+import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
 import { FloodSub } from "@libp2p/floodsub";
 import { PubSubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
 
@@ -57,6 +57,15 @@ async function startRelay () {
     node.connectionManager.addEventListener('peer:disconnect', (evt) => {
         console.log(`Disconnected from ${evt.detail.remotePeer.toString()}`)
     })
+
+    // Handle messages for the protocol
+    await node.handle(
+        '/broadcast',
+        async ({stream}) => {
+            // Read the stream and output to console
+            streamToConsole(stream)
+        }
+    )
 
     await node.start()
     _NODE = await node
