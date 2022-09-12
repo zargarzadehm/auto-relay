@@ -1,15 +1,14 @@
 import { PeerId } from "@libp2p/interface-peer-id";
 import { createEd25519PeerId, createFromJSON } from "@libp2p/peer-id-factory";
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import fs from "fs";
 import { Libp2p } from "libp2p";
 import { pipe } from "it-pipe";
-import { JsonBI } from "./NetworkModels.js";
 import { Connection, Stream } from "@libp2p/interface-connection";
 import map from "it-map";
 import * as lp from "it-length-prefixed";
 import { OPEN }  from "@libp2p/interface-connection/status";
+import { PassThrough } from "stream";
 
 /**
  * return PeerID or create PeerID if it doesn't exist
@@ -62,22 +61,16 @@ const savePeerIdIfNeed = async (peerObj: { peerId: PeerId; exist: boolean }, typ
 /**
  * Send message to a peer
  * @param stream
- * @param peer destination PeerId
+ * @param outputStream
  * @param msg a json data include (msg, channel, receiver(optional))
- * @param node create connection to peer
  * @param sender
  */
-const sendMessage =  async (stream: Stream, msg: any, sender: string) => {
-    msg.sender = sender
-
-    await pipe(
-        [await uint8ArrayFromString(JsonBI.stringify(msg))],
-        // Encode with length prefix (so receiving side knows how much data is coming)
+const startSendingMessage =  async (stream: Stream, outputStream: PassThrough) => {
+    pipe(
+        outputStream,
         lp.encode(),
-        // Write to the stream (the sink)
         stream.sink
-    )
-    await stream.close()
+    ).catch(console.error);
 }
 
 const getOpenStream = async (connections: Array<Connection>, node: Libp2p, peer: PeerId): Promise<{ connection: Connection; stream: Stream }> => {
@@ -86,7 +79,7 @@ const getOpenStream = async (connections: Array<Connection>, node: Libp2p, peer:
     for await (const conn of connections) {
         if(conn.stat.status === OPEN) {
             for await (const obj of conn.streams){
-                if (obj.stat.protocol === "broadcast") {
+                if (obj.stat.protocol === "/broadcast") {
                     stream = obj
                     break
                 }
@@ -99,18 +92,22 @@ const getOpenStream = async (connections: Array<Connection>, node: Libp2p, peer:
     }
 
     if (!connection) {
+        console.log("don't exist connection for : ", peer.toString())
         connection = await node.dial(peer)
         stream = await connection.newStream(['/broadcast'])
     }
-    if (!stream) stream = await connection.newStream(['/broadcast'])
+    if (!stream) {
+        stream = await connection.newStream(['/broadcast'])
+        console.log("don't exist stream for : ", peer.toString())
+    }
     return {
         stream: stream,
         connection: connection
     }
 }
 
-function streamToConsole(stream: Stream) {
-    pipe(
+async function  streamToConsole(stream: Stream) {
+    await pipe(
         // Read from the stream (the source)
         stream.source,
         // Decode length-prefixed data
@@ -122,7 +119,7 @@ function streamToConsole(stream: Stream) {
             // For each chunk of data
             for await (const msg of source) {
                 // Output the data as a utf8 string
-                console.log('> ' + msg.toString().replace('\n', ''))
+                console.log('> ' + msg.toString())
             }
         }
     )
@@ -167,4 +164,4 @@ function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-export { savePeerIdIfNeed, getOrCreatePeerID, delay, sendMessage, getOpenStream, streamToConsole }
+export { savePeerIdIfNeed, getOrCreatePeerID, delay, startSendingMessage, getOpenStream, streamToConsole }
