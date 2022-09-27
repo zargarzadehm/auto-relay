@@ -5,13 +5,13 @@ import { Mplex } from '@libp2p/mplex'
 import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
 import { FloodSub } from "@libp2p/floodsub";
 import { PubSubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
-import { ConnectionStream, SendDataCommunication } from "./Interfaces";
-import { logger } from "./log/Logger";
+import { ConnectionStream, SendDataCommunication } from "./Interfaces.js";
+import { logger } from "./log/Logger.js";
 import { PeerId } from "@libp2p/interface-peer-id";
 import { PassThrough } from "stream";
 import { pipe } from "it-pipe";
 import * as lp from "it-length-prefixed";
-import { JsonBI } from "./NetworkModels";
+import { JsonBI } from "./NetworkModels.js";
 import { Connection, Stream } from "@libp2p/interface-connection";
 import { OPEN } from '@libp2p/interface-connection/status';
 
