@@ -33,6 +33,8 @@ async function startDialer() {
 
     const conn = await node.dial(await new Multiaddr(autoRelayNodeAddr))
     console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`)
+
+    return _NODE
 }
 
 export { startDialer }

@@ -1,4 +1,4 @@
-import { startRelay } from "./relay.js";
+import { broadcastPeerIds, startRelay } from "./relay.js";
 import { startListener } from "./listener.js"
 import { startDialer } from "./dialer.js"
 import { delay, getOpenStream, startSendingMessage } from "./utils.js";
@@ -73,8 +73,22 @@ const main = async () => {
             }
         }
     } else if (process.env.TYPE_P2P === "dialer") startDialer()
-    else
-        startRelay()
+    else{
+        await startRelay().then(obj => {
+            while (!obj.isStarted()) {
+                delay(5000)
+            }
+            return obj
+        })
+
+        new Promise(() =>
+            setInterval(
+                broadcastPeerIds,
+                30 * 1000
+            )
+        );
+    }
+
 }
 
 main()
