@@ -19,7 +19,7 @@ let _NODE: Libp2p | undefined;
 const _PENDING_MESSAGE: SendDataCommunication[] = [];
 const _OUTPUT_STREAMS: Map<string, PassThrough> = new Map<string,
     PassThrough>();
-const _SUPPORTED_PROTOCOL: string = '/broadcast';
+const _SUPPORTED_PROTOCOL: string = '/get-peers';
 
 
 async function startRelay() {
@@ -75,6 +75,15 @@ async function startRelay() {
     // Handle messages for the protocol
     await node.handle(
         '/broadcast',
+        async ({stream}) => {
+            // Read the stream and output to console
+            streamToConsole(stream)
+        }
+    )
+
+    // Handle messages for the protocol
+    await node.handle(
+        _SUPPORTED_PROTOCOL,
         async ({stream}) => {
             // Read the stream and output to console
             streamToConsole(stream)
