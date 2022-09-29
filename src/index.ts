@@ -4,6 +4,7 @@ import { startDialer } from "./dialer.js"
 import { delay, getOpenStream, startSendingMessage } from "./utils.js";
 import { JsonBI } from "./NetworkModels.js";
 import { PassThrough } from "stream";
+import { logger } from "./log/Logger";
 
 const outputStreams: Map<string, PassThrough> = new Map<string, PassThrough>()
 
@@ -74,19 +75,24 @@ const main = async () => {
         }
     } else if (process.env.TYPE_P2P === "dialer") startDialer()
     else{
-        await startRelay().then(obj => {
-            while (!obj.isStarted()) {
-                delay(5000)
-            }
-            return obj
-        })
-
-        new Promise(() =>
-            setInterval(
-                broadcastPeerIds,
-                30 * 1000
+        try {
+            await startRelay().then(obj => {
+                while (!obj.isStarted()) {
+                    delay(5000)
+                }
+                return obj
+            })
+            await delay(10 * 1000)
+            broadcastPeerIds().then(() =>
+                setInterval(
+                    broadcastPeerIds,
+                    30 * 1000
+                )
             )
-        );
+        }
+        catch (error) {
+            logger.error(`an error occurred for start relay: [${error}]`)
+        }
     }
 
 }

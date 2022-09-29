@@ -19,7 +19,7 @@ let _NODE: Libp2p | undefined;
 const _PENDING_MESSAGE: SendDataCommunication[] = [];
 const _OUTPUT_STREAMS: Map<string, PassThrough> = new Map<string,
     PassThrough>();
-const _SUPPORTED_PROTOCOL: string = '/get-peers';
+const _SUPPORTED_PROTOCOL: string = '/getpeers';
 
 
 async function startRelay() {
@@ -59,17 +59,20 @@ async function startRelay() {
 
     // Listen for new peers
     node.addEventListener('peer:discovery', (evt) => {
-        console.log(`Found peer ${evt.detail.id.toString()}`)
+        logger.info(`Found peer ${evt.detail.id.toString()}`)
     })
 
     // Listen for new connections to peers
     node.connectionManager.addEventListener('peer:connect', (evt) => {
-        console.log(`Connected to ${evt.detail.remotePeer.toString()}`)
+        logger.info(`Connected to ${evt.detail.remotePeer.toString()}`)
     })
 
     // Listen for peers disconnecting
     node.connectionManager.addEventListener('peer:disconnect', (evt) => {
-        console.log(`Disconnected from ${evt.detail.remotePeer.toString()}`)
+        logger.info(`Disconnected from ${evt.detail.remotePeer.toString()}`)
+        _OUTPUT_STREAMS.forEach((value, key) => {
+            if (key.includes(evt.detail.remotePeer.toString())) _OUTPUT_STREAMS.delete(key)
+        })
     })
 
     // Handle messages for the protocol
@@ -95,9 +98,9 @@ async function startRelay() {
 
     await savePeerIdIfNeed(peerId, 'relay')
 
-    console.log(`Relay node started with id ${node.peerId.toString()}`)
-    console.log('Listening on:')
-    node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
+    logger.info(`Relay node started with id ${node.peerId.toString()}`)
+    logger.info('Listening on:')
+    node.getMultiaddrs().forEach((ma) => logger.info(ma.toString()))
 
     return _NODE
 }
@@ -113,31 +116,35 @@ const getOpenStream = async (
     node: Libp2p,
     peer: PeerId,
     protocol: string
-): Promise<ConnectionStream> => {
-    let connection: Connection | undefined = undefined;
-    let stream: Stream | undefined = undefined;
-    for await (const conn of node.getConnections(peer)) {
-        if (conn.stat.status === OPEN) {
-            for await (const obj of conn.streams) {
-                if (obj.stat.protocol === protocol) {
-                    stream = obj;
-                    break;
+): Promise<ConnectionStream|undefined> => {
+    try {
+        let connection: Connection | undefined = undefined;
+        let stream: Stream | undefined = undefined;
+        for await (const conn of node.getConnections(peer)) {
+            if (conn.stat.status === OPEN) {
+                for await (const obj of conn.streams) {
+                    if (obj.stat.protocol === protocol) {
+                        stream = obj;
+                        break;
+                    }
                 }
-            }
-            connection = conn;
-            if (stream) break;
-            else stream = await conn.newStream([protocol]);
-        } else await conn.close();
+                connection = conn;
+                if (stream) break;
+                else stream = await conn.newStream([protocol]);
+            } else await conn.close();
+        }
+        if (!connection) {
+            connection = await node.dial(peer);
+            stream = await connection.newStream([protocol]);
+        }
+        if (!stream) stream = await connection.newStream([protocol]);
+        return {
+            stream: stream,
+            connection: connection,
+        };
+    } catch (e) {
+        logger.error(`an error occurred for get stream: [${e}]`)
     }
-    if (!connection) {
-        connection = await node.dial(peer);
-        stream = await connection.newStream([protocol]);
-    }
-    if (!stream) stream = await connection.newStream([protocol]);
-    return {
-        stream: stream,
-        connection: connection,
-    };
 };
 
 
@@ -152,43 +159,50 @@ const streamForPeer = async (
     peer: PeerId,
     messageToSend: SendDataCommunication
 ): Promise<void> => {
-    let outputStream: PassThrough | undefined;
+    try {
+        let outputStream: PassThrough | undefined;
 
-    const connStream = await getOpenStream(
-        node,
-        peer,
-        _SUPPORTED_PROTOCOL
-    );
-    const passThroughName = `${peer.toString()}-${_SUPPORTED_PROTOCOL}-${
-        connStream.stream.id
-    }`;
-
-    if (_OUTPUT_STREAMS.has(passThroughName)) {
-        outputStream = _OUTPUT_STREAMS.get(passThroughName);
-    } else {
-        const outStream = new PassThrough();
-        _OUTPUT_STREAMS.set(passThroughName, outStream);
-        outputStream = outStream;
-        pipe(outputStream, lp.encode(), connStream.stream).catch((e) => {
-            logger.error(e);
-            connStream.stream.close();
-            _OUTPUT_STREAMS.delete(passThroughName);
-            _PENDING_MESSAGE.push(messageToSend);
-            logger.warn(
-                "Message added to pending list due to dialer node isn't ready"
-            );
-        });
-    }
-
-    if (outputStream) {
-        // Give time for the stream to flush.
-        await new Promise((resolve) =>
-            setTimeout(resolve, 0.1 * 1000)
+        const connStream = await getOpenStream(
+            node,
+            peer,
+            _SUPPORTED_PROTOCOL
         );
-        // Send some outgoing data.
-        outputStream.write(JsonBI.stringify(messageToSend));
-    } else {
-        logger.error(`doesn't exist output pass through for ${passThroughName}`);
+        if (connStream){
+            const passThroughName = `${peer.toString()}-${_SUPPORTED_PROTOCOL}-${
+                connStream.stream.id
+            }`;
+
+            if (_OUTPUT_STREAMS.has(passThroughName)) {
+                outputStream = _OUTPUT_STREAMS.get(passThroughName);
+            } else {
+                const outStream = new PassThrough();
+                _OUTPUT_STREAMS.set(passThroughName, outStream);
+                outputStream = outStream;
+                pipe(outputStream, lp.encode(), connStream.stream).catch((e) => {
+                    logger.error("Dard");
+                    logger.error(e);
+                    connStream.stream.close();
+                    _OUTPUT_STREAMS.delete(passThroughName);
+                    _PENDING_MESSAGE.push(messageToSend);
+                    logger.warn(
+                        "Message added to pending list due to dialer node isn't ready"
+                    );
+                });
+            }
+
+            if (outputStream) {
+                // Give time for the stream to flush.
+                await new Promise((resolve) =>
+                    setTimeout(resolve, 0.1 * 1000)
+                );
+                // Send some outgoing data.
+                outputStream.write(JsonBI.stringify(messageToSend));
+            } else {
+                logger.error(`doesn't exist output pass through for ${passThroughName}`);
+            }
+        }
+    } catch (e) {
+        logger.error(`an error occurred for write to stream: [${e}]`)
     }
 };
 
@@ -197,21 +211,24 @@ const streamForPeer = async (
  * send list of peerIds to peers
  */
 const broadcastPeerIds = async (): Promise<void> => {
+    try {
+        if (!_NODE) {
+            logger.warn(
+                "Dialer node isn't ready"
+            );
+            return;
+        }
 
-    if (!_NODE) {
-        logger.warn(
-            "Dialer node isn't ready"
-        );
-        return;
-    }
-
-    // send message for listener peers (not relays)
-    const peers = _NODE.getPeers();
-    for (const peer of peers) {
-        const data: SendDataCommunication = {
-            peerIds: peers.map(p => p.toString()).filter(p => p !== peer.toString())
-        };
-        streamForPeer(_NODE, peer, data);
+        // send message for listener peers (not relays)
+        const peers = _NODE.getPeers();
+        for await (const peer of peers) {
+            const data: SendDataCommunication = {
+                peerIds: peers.map(p => p.toString()).filter(p => p !== peer.toString())
+            };
+            streamForPeer(_NODE, peer, data);
+        }
+    } catch (e) {
+        logger.error(`an error occurred for broadcast peers: [${e}]`)
     }
 };
 
