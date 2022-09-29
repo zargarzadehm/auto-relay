@@ -4,7 +4,6 @@ import { startDialer } from "./dialer.js"
 import { delay, getOpenStream, startSendingMessage } from "./utils.js";
 import { JsonBI } from "./NetworkModels.js";
 import { PassThrough } from "stream";
-import { logger } from "./log/Logger.js";
 
 const outputStreams: Map<string, PassThrough> = new Map<string, PassThrough>()
 
@@ -91,7 +90,7 @@ const main = async () => {
             )
         }
         catch (error) {
-            logger.error(`an error occurred for start relay: [${error}]`)
+            console.error(`an error occurred for start relay: [${error}]`)
         }
     }
 

@@ -59,17 +59,17 @@ async function startRelay() {
 
     // Listen for new peers
     node.addEventListener('peer:discovery', (evt) => {
-        logger.info(`Found peer ${evt.detail.id.toString()}`)
+        console.log(`Found peer ${evt.detail.id.toString()}`)
     })
 
     // Listen for new connections to peers
     node.connectionManager.addEventListener('peer:connect', (evt) => {
-        logger.info(`Connected to ${evt.detail.remotePeer.toString()}`)
+        console.log(`Connected to ${evt.detail.remotePeer.toString()}`)
     })
 
     // Listen for peers disconnecting
     node.connectionManager.addEventListener('peer:disconnect', (evt) => {
-        logger.info(`Disconnected from ${evt.detail.remotePeer.toString()}`)
+        console.log(`Disconnected from ${evt.detail.remotePeer.toString()}`)
         _OUTPUT_STREAMS.forEach((value, key) => {
             if (key.includes(evt.detail.remotePeer.toString())) _OUTPUT_STREAMS.delete(key)
         })
@@ -98,9 +98,9 @@ async function startRelay() {
 
     await savePeerIdIfNeed(peerId, 'relay')
 
-    logger.info(`Relay node started with id ${node.peerId.toString()}`)
-    logger.info('Listening on:')
-    node.getMultiaddrs().forEach((ma) => logger.info(ma.toString()))
+    console.log(`Relay node started with id ${node.peerId.toString()}`)
+    console.log('Listening on:')
+    node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 
     return _NODE
 }
@@ -143,7 +143,7 @@ const getOpenStream = async (
             connection: connection,
         };
     } catch (e) {
-        logger.error(`an error occurred for get stream: [${e}]`)
+        console.error(`an error occurred for get stream: [${e}]`)
     }
 };
 
@@ -179,8 +179,7 @@ const streamForPeer = async (
                 _OUTPUT_STREAMS.set(passThroughName, outStream);
                 outputStream = outStream;
                 pipe(outputStream, lp.encode(), connStream.stream).catch((e) => {
-                    logger.error("Dard");
-                    logger.error(e);
+                    console.error(`an error occurred for write to stream [${e}]`);
                     connStream.stream.close();
                     _OUTPUT_STREAMS.delete(passThroughName);
                     _PENDING_MESSAGE.push(messageToSend);
@@ -198,11 +197,11 @@ const streamForPeer = async (
                 // Send some outgoing data.
                 outputStream.write(JsonBI.stringify(messageToSend));
             } else {
-                logger.error(`doesn't exist output pass through for ${passThroughName}`);
+                console.error(`doesn't exist output pass through for ${passThroughName}`);
             }
         }
     } catch (e) {
-        logger.error(`an error occurred for write to stream: [${e}]`)
+        console.error(`an error occurred for write to stream: [${e}]`)
     }
 };
 
@@ -228,7 +227,7 @@ const broadcastPeerIds = async (): Promise<void> => {
             streamForPeer(_NODE, peer, data);
         }
     } catch (e) {
-        logger.error(`an error occurred for broadcast peers: [${e}]`)
+        console.error(`an error occurred for broadcast peers: [${e}]`)
     }
 };
 
