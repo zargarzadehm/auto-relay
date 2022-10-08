@@ -33,7 +33,7 @@ async function startListener() {
         pubsub: new FloodSub(),
         peerDiscovery: [
             new Bootstrap({
-                interval: 10e3,
+                timeout: 10e3,
                 list: [
                     '/ip4/10.10.9.6/tcp/8080/ws/p2p/12D3KooWHE8KRED4QroNj4UwPFfyHHysRjMRr3YE1HmFYKGfqo7x',
                     '/ip4/10.10.9.6/tcp/8081/ws/p2p/12D3KooWS9qp4rjviahzmLiBZjHA5LfwqgucrSKPvECkY764yGnb'
