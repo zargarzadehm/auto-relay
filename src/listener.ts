@@ -4,7 +4,7 @@ import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
 import { Bootstrap } from '@libp2p/bootstrap'
 import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
-import { FloodSub } from '@libp2p/floodsub'
+import { GossipSub } from '@chainsafe/libp2p-gossipsub'
 import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
 
 
@@ -30,7 +30,7 @@ async function startListener() {
                 maxListeners: 5
             }
         },
-        pubsub: new FloodSub(),
+        pubsub: new GossipSub({ allowPublishToZeroPeers: true }),
         peerDiscovery: [
             new Bootstrap({
                 timeout: 10e3,
