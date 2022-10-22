@@ -3,7 +3,7 @@ import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
 import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
-import { FloodSub } from "@libp2p/floodsub";
+import { GossipSub } from "@chainsafe/libp2p-gossipsub";
 import { PubSubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
 import { ConnectionStream, SendDataCommunication } from "./Interfaces.js";
 import { logger } from "./log/Logger.js";
@@ -49,7 +49,7 @@ async function startRelay() {
                 enabled: true,
             }
         },
-        pubsub: new FloodSub(),
+        pubsub: new GossipSub({ allowPublishToZeroPeers: true }),
         peerDiscovery: [
             new PubSubPeerDiscovery({
                 interval: 1000
