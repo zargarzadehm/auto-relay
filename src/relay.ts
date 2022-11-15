@@ -207,6 +207,8 @@ const streamForPeer = async (
 
 
 /**
+ * @deprecated since the issues of the guards causing message losses are fixed
+ *
  * send list of peerIds to peers
  */
 const broadcastPeerIds = async (): Promise<void> => {

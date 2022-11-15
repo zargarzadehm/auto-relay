@@ -75,19 +75,7 @@ const main = async () => {
     } else if (process.env.TYPE_P2P === "dialer") startDialer()
     else{
         try {
-            await startRelay().then(obj => {
-                while (!obj.isStarted()) {
-                    delay(5000)
-                }
-                return obj
-            })
-            await delay(10 * 1000)
-            broadcastPeerIds().then(() =>
-                setInterval(
-                    broadcastPeerIds,
-                    30 * 1000
-                )
-            )
+            await startRelay()
         }
         catch (error) {
             console.error(`an error occurred for start relay: [${error}]`)
