@@ -43,7 +43,8 @@ async function startRelay() {
         relay: {
             enabled: true,
             hop: {
-                enabled: true
+                enabled: true,
+                timeout: 600_000, // 10 minutes
             },
             advertise: {
                 enabled: true,
