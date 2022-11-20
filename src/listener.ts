@@ -1,12 +1,23 @@
-import { createLibp2p, Libp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
-import { Bootstrap } from '@libp2p/bootstrap'
-import { PubSubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
-import { GossipSub } from '@chainsafe/libp2p-gossipsub'
+import { createLibp2p, Libp2p, Libp2pInit } from 'libp2p'
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
+import { bootstrap } from '@libp2p/bootstrap'
+import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
 
+
+/**
+ * TODO: This is needed because of an issue in types of `@libp2p/pubsub-peer-discovery`
+ * which mismatch with types of `libp2p`
+ */
+ type PeerDiscoveryArray = Libp2pInit['peerDiscovery'];
+ type PeerDiscovery = PeerDiscoveryArray extends
+    | readonly (infer ElementType)[]
+    | undefined
+    ? ElementType
+    : never;
 
 let _NODE: Libp2p | undefined;
 
@@ -15,13 +26,13 @@ async function startListener() {
     const node = await createLibp2p({
         peerId: peerId.peerId,
         transports: [
-            new WebSockets()
+            webSockets()
         ],
         connectionEncryption: [
-            new Noise()
+            noise()
         ],
         streamMuxers: [
-            new Mplex()
+            mplex()
         ],
         relay: {
             enabled: true,
@@ -30,18 +41,18 @@ async function startListener() {
                 maxListeners: 5
             }
         },
-        pubsub: new GossipSub({ allowPublishToZeroPeers: true }),
+        pubsub: gossipsub({ allowPublishToZeroPeers: true }),
         peerDiscovery: [
-            new Bootstrap({
+            bootstrap({
                 timeout: 10e3,
                 list: [
                     '/ip4/10.10.9.6/tcp/8080/ws/p2p/12D3KooWHE8KRED4QroNj4UwPFfyHHysRjMRr3YE1HmFYKGfqo7x',
                     '/ip4/10.10.9.6/tcp/8081/ws/p2p/12D3KooWS9qp4rjviahzmLiBZjHA5LfwqgucrSKPvECkY764yGnb'
                 ]
             }),
-            new PubSubPeerDiscovery({
+            pubsubPeerDiscovery({
                 interval: 1000
-            })
+            }) as PeerDiscovery
         ]
     })
 

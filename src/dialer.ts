@@ -1,7 +1,7 @@
 import { createLibp2p, Libp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 import * as multiaddr from '@multiformats/multiaddr';
 import { getOrCreatePeerID, savePeerIdIfNeed } from "./utils.js";
 
@@ -16,13 +16,13 @@ async function startDialer() {
     const node = await createLibp2p({
         peerId: peerId.peerId,
         transports: [
-            new WebSockets()
+            webSockets()
         ],
         connectionEncryption: [
-            new Noise()
+            noise()
         ],
         streamMuxers: [
-            new Mplex()
+            mplex()
         ]
     })
 
