@@ -1,10 +1,10 @@
-import { createLibp2p, Libp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { createLibp2p, Libp2p, Libp2pInit } from 'libp2p'
+import { webSockets } from '@libp2p/websockets'
+import { noise } from '@chainsafe/libp2p-noise'
+import { mplex } from '@libp2p/mplex'
 import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
-import { FloodSub } from "@libp2p/floodsub";
-import { PubSubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
+import { gossipsub } from "@chainsafe/libp2p-gossipsub";
+import { pubsubPeerDiscovery } from "@libp2p/pubsub-peer-discovery";
 import { ConnectionStream, SendDataCommunication } from "./Interfaces.js";
 import { logger } from "./log/Logger.js";
 import { PeerId } from "@libp2p/interface-peer-id";
@@ -14,6 +14,17 @@ import * as lp from "it-length-prefixed";
 import { JsonBI } from "./NetworkModels.js";
 import { Connection, Stream } from "@libp2p/interface-connection";
 import { OPEN } from '@libp2p/interface-connection/status';
+
+/**
+ * TODO: This is needed because of an issue in types of `@libp2p/pubsub-peer-discovery`
+ * which mismatch with types of `libp2p`
+ */
+type PeerDiscoveryArray = Libp2pInit['peerDiscovery'];
+type PeerDiscovery = PeerDiscoveryArray extends
+   | readonly (infer ElementType)[]
+   | undefined
+   ? ElementType
+   : never;
 
 let _NODE: Libp2p | undefined;
 const _PENDING_MESSAGE: SendDataCommunication[] = [];
@@ -32,28 +43,29 @@ async function startRelay() {
             // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
         },
         transports: [
-            new WebSockets()
+            webSockets()
         ],
         connectionEncryption: [
-            new Noise()
+            noise()
         ],
         streamMuxers: [
-            new Mplex()
+            mplex()
         ],
         relay: {
             enabled: true,
             hop: {
-                enabled: true
+                enabled: true,
+                timeout: 600_000, // 10 minutes
             },
             advertise: {
                 enabled: true,
             }
         },
-        pubsub: new FloodSub(),
+        pubsub: gossipsub({ allowPublishToZeroPeers: true }),
         peerDiscovery: [
-            new PubSubPeerDiscovery({
+            pubsubPeerDiscovery({
                 interval: 1000
-            })
+            }) as PeerDiscovery
         ]
     })
 
@@ -207,6 +219,8 @@ const streamForPeer = async (
 
 
 /**
+ * @deprecated since the issues of the guards causing message losses are fixed
+ *
  * send list of peerIds to peers
  */
 const broadcastPeerIds = async (): Promise<void> => {
