@@ -56,9 +56,6 @@ async function startRelay() {
             hop: {
                 enabled: true,
                 timeout: 600_000, // 10 minutes
-            },
-            advertise: {
-                enabled: true,
             }
         },
         pubsub: gossipsub({ allowPublishToZeroPeers: true }),
