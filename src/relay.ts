@@ -111,6 +111,23 @@ async function startRelay() {
     console.log('Listening on:')
     node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
 
+    /**
+     * TODO: This is not the ideal way to increase the streams limits, but there
+     * seems to be no other way to do it with current libp2p apis. It needs to
+     * be changed if such an api is added in the future.
+     *
+     * Related issues:
+     * - https://github.com/libp2p/js-libp2p/issues/1518
+     * - https://git.ergopool.io/ergo/rosen-bridge/p2p/auto-relay/-/issues/17
+     */
+    const handler = node.registrar.getHandler('/libp2p/circuit/relay/0.1.0');
+    node.registrar.unhandle('/libp2p/circuit/relay/0.1.0');
+    await node.registrar.handle('/libp2p/circuit/relay/0.1.0', handler.handler, {
+        ...handler.options,
+        maxInboundStreams: 1000,
+        maxOutboundStreams: 1000,
+    });
+
     return _NODE
 }
 
