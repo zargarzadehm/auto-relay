@@ -15,17 +15,6 @@ import { JsonBI } from "./NetworkModels.js";
 import { Connection, Stream } from "@libp2p/interface-connection";
 import { OPEN } from '@libp2p/interface-connection/status';
 
-/**
- * TODO: This is needed because of an issue in types of `@libp2p/pubsub-peer-discovery`
- * which mismatch with types of `libp2p`
- */
-type PeerDiscoveryArray = Libp2pInit['peerDiscovery'];
-type PeerDiscovery = PeerDiscoveryArray extends
-   | readonly (infer ElementType)[]
-   | undefined
-   ? ElementType
-   : never;
-
 let _NODE: Libp2p | undefined;
 const _PENDING_MESSAGE: SendDataCommunication[] = [];
 const _OUTPUT_STREAMS: Map<string, PassThrough> = new Map<string,
@@ -62,7 +51,7 @@ async function startRelay() {
         peerDiscovery: [
             pubsubPeerDiscovery({
                 interval: 1000
-            }) as PeerDiscovery
+            })
         ]
     })
 

@@ -7,18 +7,6 @@ import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { getOrCreatePeerID, savePeerIdIfNeed, streamToConsole } from "./utils.js";
 
-
-/**
- * TODO: This is needed because of an issue in types of `@libp2p/pubsub-peer-discovery`
- * which mismatch with types of `libp2p`
- */
- type PeerDiscoveryArray = Libp2pInit['peerDiscovery'];
- type PeerDiscovery = PeerDiscoveryArray extends
-    | readonly (infer ElementType)[]
-    | undefined
-    ? ElementType
-    : never;
-
 let _NODE: Libp2p | undefined;
 
 async function startListener() {
@@ -52,7 +40,7 @@ async function startListener() {
             }),
             pubsubPeerDiscovery({
                 interval: 1000
-            }) as PeerDiscovery
+            })
         ]
     })
 
