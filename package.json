@@ -10,7 +10,7 @@
     "lint": "eslint --fix . && npm run prettify"
   },
   "engines": {
-    "node": ">=14.16"
+    "node": ">=18.14.0"
   },
   "type": "module",
   "exports": "./dist/index.js",
