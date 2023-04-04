@@ -1,6 +1,5 @@
 import { Connection, Stream } from '@libp2p/interface-connection';
 
-
 interface SendDataCommunication {
   peerIds: string[];
 }
@@ -10,7 +9,4 @@ interface ConnectionStream {
   stream: Stream;
 }
 
-export {
-  SendDataCommunication,
-  ConnectionStream
-};
+export { SendDataCommunication, ConnectionStream };
