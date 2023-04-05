@@ -70,14 +70,14 @@ Listening on:
 One of the typical use cases for Auto Relay is nodes behind a NAT or browser nodes due to their inability to expose a public address. For running a libp2p node that automatically binds itself to connected HOP relays, you can see the following:
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { createLibp2p } from 'libp2p';
+import { WebSockets } from '@libp2p/websockets';
+import { Noise } from '@chainsafe/libp2p-noise';
+import { Mplex } from '@libp2p/mplex';
 
-const relayAddr = process.argv[2]
+const relayAddr = process.argv[2];
 if (!relayAddr) {
-  throw new Error('the relay address needs to be specified as a parameter')
+  throw new Error('the relay address needs to be specified as a parameter');
 }
 
 const node = await createLibp2p({
@@ -88,25 +88,27 @@ const node = await createLibp2p({
     enabled: true,
     autoRelay: {
       enabled: true,
-      maxListeners: 2
-    }
-  }
-})
+      maxListeners: 2,
+    },
+  },
+});
 
-await node.start()
-console.log(`Node started with id ${node.peerId.toB58String()}`)
+await node.start();
+console.log(`Node started with id ${node.peerId.toB58String()}`);
 
-const conn = await node.dial(relayAddr)
+const conn = await node.dial(relayAddr);
 
-console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`)
+console.log(`Connected to the HOP relay ${conn.remotePeer.toString()}`);
 
 // Wait for connection and relay to be bind for the example purpose
 node.peerStore.on('change:multiaddrs', ({ peerId }) => {
   // Updated self multiaddrs?
   if (peerId.equals(node.peerId)) {
-    console.log(`Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`)
+    console.log(
+      `Advertising with a relay address of ${node.multiaddrs[0].toString()}/p2p/${node.peerId.toB58String()}`
+    );
   }
-})
+});
 ```
 
 As you can see in the code, we need to provide the relay address, `relayAddr`, as a process argument. This node will dial the provided relay address and automatically bind to it.
@@ -134,27 +136,29 @@ Instead of dialing this relay manually, you could set up this node with the Boot
 Now that you have a relay node and a node bound to that relay, you can test connecting to the auto relay node via the relay.
 
 ```js
-import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@libp2p/websockets'
-import { Noise } from '@chainsafe/libp2p-noise'
-import { Mplex } from '@libp2p/mplex'
+import { createLibp2p } from 'libp2p';
+import { WebSockets } from '@libp2p/websockets';
+import { Noise } from '@chainsafe/libp2p-noise';
+import { Mplex } from '@libp2p/mplex';
 
-const autoRelayNodeAddr = process.argv[2]
+const autoRelayNodeAddr = process.argv[2];
 if (!autoRelayNodeAddr) {
-  throw new Error('the auto relay node address needs to be specified')
+  throw new Error('the auto relay node address needs to be specified');
 }
 
 const node = await createLibp2p({
   transports: [new WebSockets()],
   connectionEncryption: [new Noise()],
-  streamMuxers: [new Mplex()]
-})
+  streamMuxers: [new Mplex()],
+});
 
-await node.start()
-console.log(`Node started with id ${node.peerId.toB58String()}`)
+await node.start();
+console.log(`Node started with id ${node.peerId.toB58String()}`);
 
-const conn = await node.dial(autoRelayNodeAddr)
-console.log(`Connected to the auto relay node via ${conn.remoteAddr.toString()}`)
+const conn = await node.dial(autoRelayNodeAddr);
+console.log(
+  `Connected to the auto relay node via ${conn.remoteAddr.toString()}`
+);
 ```
 
 You should now run the following to start the relay node using the listen address from step 2:
