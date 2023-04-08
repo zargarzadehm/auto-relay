@@ -7,7 +7,8 @@
     "dev": "tsc-watch --onSuccess \"npm run watch\"",
     "build": "tsc-watch --onSuccess",
     "prettify": "prettier --write . --ignore-path .gitignore",
-    "lint": "eslint --fix . && npm run prettify"
+    "lint": "eslint --fix . && npm run prettify",
+    "prepare": "husky install"
   },
   "engines": {
     "node": ">=18.14.0"
@@ -30,20 +31,22 @@
     "@multiformats/multiaddr": "^11.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.26.0",
-    "eslint-config-prettier": "^8.5.0",
     "eslint": "^8.16.0",
+    "eslint-config-prettier": "^8.5.0",
     "execa": "^6.1.0",
     "json-bigint": "^1.0.0",
     "libp2p": "^0.41.0",
     "p-defer": "^4.0.0",
     "prettier": "^2.8.4",
     "uint8arrays": "^3.1.0",
-    "winston-daily-rotate-file": "^4.7.1",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
     "@types/json-bigint": "^1.0.1",
     "@types/node": "^18.7.13",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.1",
     "nodemon": "^2.0.19",
     "ts-node": "^10.9.1",
     "tsc-watch": "^5.0.3",
