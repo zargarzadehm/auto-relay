@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "watch": "nodemon --watch './**/*.{ts,graphql}' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
-    "dev": "tsc-watch --onSuccess \"npm run watch\"",
-    "build": "tsc-watch --onSuccess",
     "prettify": "prettier --write . --ignore-path .gitignore",
     "lint": "eslint --fix . && npm run prettify",
+    "build": "tsc",
+    "start": "ts-node --experimental-specifier-resolution=node ./src/index.ts",
+    "start:dev": "nodemon ./src/index.ts",
+    "type-check": "tsc --noEmit",
     "prepare": "husky install"
   },
   "engines": {
@@ -49,7 +50,6 @@
     "lint-staged": "^13.2.1",
     "nodemon": "^2.0.19",
     "ts-node": "^10.9.1",
-    "tsc-watch": "^5.0.3",
     "typescript": "^4.7.4"
   }
 }
