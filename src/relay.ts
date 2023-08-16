@@ -61,6 +61,9 @@ async function startRelay() {
     } else {
       // Drop connections from disallowed peers
       evt.detail.close();
+      console.log(
+        `Connection from ${connectedPeer} rejected due to allow list config`
+      );
     }
   });
 
