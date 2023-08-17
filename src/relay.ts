@@ -10,6 +10,9 @@ import {
 import { gossipsub } from '@chainsafe/libp2p-gossipsub';
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery';
 import { PassThrough } from 'stream';
+import config from 'config';
+
+const allowedPeers = config.get<string[]>('allowedPeers');
 
 let _NODE: Libp2p | undefined;
 const _OUTPUT_STREAMS: Map<string, PassThrough> = new Map<
@@ -52,7 +55,16 @@ async function startRelay() {
 
   // Listen for new connections to peers
   node.connectionManager.addEventListener('peer:connect', (evt) => {
-    console.log(`Connected to ${evt.detail.remotePeer.toString()}`);
+    const connectedPeer = evt.detail.remotePeer.toString();
+    if (allowedPeers.includes(connectedPeer)) {
+      console.log(`Connected to ${connectedPeer}`);
+    } else {
+      // Drop connections from disallowed peers
+      evt.detail.close();
+      console.log(
+        `Connection from ${connectedPeer} rejected due to allow list config`
+      );
+    }
   });
 
   // Listen for peers disconnecting

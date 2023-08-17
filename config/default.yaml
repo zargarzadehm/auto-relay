@@ -1,0 +1,2 @@
+allowedPeers: # list of peers allowed to be connected to the relay
+  - ''
