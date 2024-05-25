@@ -8,6 +8,8 @@ import map from 'it-map';
 import * as lp from 'it-length-prefixed';
 
 /**
+ * @param type
+ * @param directoryName
  * return PeerID or create PeerID if it doesn't exist
  * @return PeerID
  */
@@ -41,6 +43,7 @@ const getOrCreatePeerID = async (
  * If it didn't exist PeerID file, this function try to create a file and save peerId into that
  * @param peerObj { peerId: PeerId; exist: boolean }
  * @param type
+ * @param directoryName
  */
 const savePeerIdIfNeed = async (
   peerObj: { peerId: PeerId; exist: boolean },
