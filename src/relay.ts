@@ -22,7 +22,7 @@ const _OUTPUT_STREAMS: Map<string, PassThrough> = new Map<
 const _SUPPORTED_PROTOCOL = '/getpeers';
 
 async function startRelay() {
-  const peerId = await getOrCreatePeerID('relay');
+  const peerId = await getOrCreatePeerID('relay', 'relay');
   const node = await createLibp2p({
     peerId: peerId.peerId,
     addresses: {
@@ -91,7 +91,7 @@ async function startRelay() {
   await node.start();
   _NODE = await node;
 
-  await savePeerIdIfNeed(peerId, 'relay');
+  await savePeerIdIfNeed(peerId, 'relay', 'relay');
 
   console.log(`Relay node started with id ${node.peerId.toString()}`);
   console.log('Listening on:');

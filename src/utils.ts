@@ -8,20 +8,27 @@ import map from 'it-map';
 import * as lp from 'it-length-prefixed';
 
 /**
+ * @param type
+ * @param directoryName
  * return PeerID or create PeerID if it doesn't exist
  * @return PeerID
  */
 const getOrCreatePeerID = async (
-  type: string
+  type: string,
+  directoryName: string
 ): Promise<{ peerId: PeerId; exist: boolean }> => {
-  if (!fs.existsSync(`./${type}-${process.env.PEER_PATH_NUMBER!}.json`)) {
+  if (
+    !fs.existsSync(
+      `./${directoryName}/${type}-${process.env.PEER_PATH_NUMBER!}.json`
+    )
+  ) {
     return {
       peerId: await createEd25519PeerId(),
       exist: false,
     } as const;
   } else {
     const jsonData: string = fs.readFileSync(
-      `./${type}-${process.env.PEER_PATH_NUMBER!}.json`,
+      `./${directoryName}/${type}-${process.env.PEER_PATH_NUMBER!}.json`,
       'utf8'
     );
     const peerIdDialerJson = await JSON.parse(jsonData);
@@ -36,10 +43,12 @@ const getOrCreatePeerID = async (
  * If it didn't exist PeerID file, this function try to create a file and save peerId into that
  * @param peerObj { peerId: PeerId; exist: boolean }
  * @param type
+ * @param directoryName
  */
 const savePeerIdIfNeed = async (
   peerObj: { peerId: PeerId; exist: boolean },
-  type: string
+  type: string,
+  directoryName: string
 ): Promise<void> => {
   if (!peerObj.exist) {
     const peerId = peerObj.peerId;
@@ -56,8 +65,14 @@ const savePeerIdIfNeed = async (
       pubKey: uint8ArrayToString(publicKey, 'base64pad'),
     };
     const jsonData = JSON.stringify(peerIdDialerJson);
+    if (!fs.existsSync(directoryName)) {
+      fs.mkdir(directoryName, function (err) {
+        if (err) throw err;
+        console.log('Directory created successfully');
+      });
+    }
     fs.writeFile(
-      `./${type}-${process.env.PEER_PATH_NUMBER!}.json`,
+      `./${directoryName}/${type}-${process.env.PEER_PATH_NUMBER!}.json`,
       jsonData,
       'utf8',
       function (err) {
